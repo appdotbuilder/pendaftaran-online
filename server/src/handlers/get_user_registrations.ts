@@ -1,8 +1,19 @@
 
+import { db } from '../db';
+import { registrationsTable } from '../db/schema';
 import { type GetUserRegistrationsInput, type Registration } from '../schema';
+import { eq } from 'drizzle-orm';
 
-export async function getUserRegistrations(input: GetUserRegistrationsInput): Promise<Registration[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all registrations for a specific user from the database.
-    return [];
-}
+export const getUserRegistrations = async (input: GetUserRegistrationsInput): Promise<Registration[]> => {
+  try {
+    const results = await db.select()
+      .from(registrationsTable)
+      .where(eq(registrationsTable.user_id, input.user_id))
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to get user registrations:', error);
+    throw error;
+  }
+};

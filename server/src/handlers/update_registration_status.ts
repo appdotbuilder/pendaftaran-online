@@ -1,18 +1,29 @@
 
+import { db } from '../db';
+import { registrationsTable } from '../db/schema';
 import { type UpdateRegistrationStatusInput, type Registration } from '../schema';
+import { eq } from 'drizzle-orm';
 
-export async function updateRegistrationStatus(input: UpdateRegistrationStatusInput): Promise<Registration> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is updating the registration status and notes
-    // in the database.
-    return Promise.resolve({
-        id: input.id,
-        user_id: 0, // Placeholder
-        program_id: 0, // Placeholder
+export const updateRegistrationStatus = async (input: UpdateRegistrationStatusInput): Promise<Registration> => {
+  try {
+    // Update registration record
+    const result = await db.update(registrationsTable)
+      .set({
         status: input.status,
-        registration_date: new Date(), // Placeholder
         notes: input.notes,
-        created_at: new Date(), // Placeholder
         updated_at: new Date()
-    } as Registration);
-}
+      })
+      .where(eq(registrationsTable.id, input.id))
+      .returning()
+      .execute();
+
+    if (result.length === 0) {
+      throw new Error(`Registration with id ${input.id} not found`);
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error('Registration status update failed:', error);
+    throw error;
+  }
+};

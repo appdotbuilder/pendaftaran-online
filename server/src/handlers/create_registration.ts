@@ -1,18 +1,24 @@
 
+import { db } from '../db';
+import { registrationsTable } from '../db/schema';
 import { type CreateRegistrationInput, type Registration } from '../schema';
 
-export async function createRegistration(input: CreateRegistrationInput): Promise<Registration> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new registration for a user to a training program
-    // and persisting it in the database.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
+export const createRegistration = async (input: CreateRegistrationInput): Promise<Registration> => {
+  try {
+    // Insert registration record
+    const result = await db.insert(registrationsTable)
+      .values({
         user_id: input.user_id,
         program_id: input.program_id,
-        status: 'pending',
-        registration_date: new Date(),
-        notes: input.notes,
-        created_at: new Date(),
-        updated_at: new Date()
-    } as Registration);
-}
+        notes: input.notes
+      })
+      .returning()
+      .execute();
+
+    const registration = result[0];
+    return registration;
+  } catch (error) {
+    console.error('Registration creation failed:', error);
+    throw error;
+  }
+};
